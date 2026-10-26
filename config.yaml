@@ -1,0 +1,53 @@
+# Push350 bot configuration.
+#
+# CREDENTIAL SAFETY: never commit real keys. Prefer the TOPSTEPX_USERNAME /
+# TOPSTEPX_API_KEY / TOPSTEPX_ACCOUNT_ID environment variables (they take
+# precedence over the values below). Placeholders only in this file.
+
+# TopstepX (ProjectX Gateway) credentials — PLACEHOLDERS, replace to run.
+username: "YOUR_TOPSTEPX_USERNAME"
+api_key: "YOUR_TOPSTEPX_API_KEY"
+
+# Numeric TopstepX account id (e.g. the practice/combine account). Required
+# for live mode; 0 disables broker P&L reconciliation and broker order
+# placement checks (paper signals still work in --smoke mode only).
+account_id: 0
+
+# Mode: "paper" (default) or "live".
+#   paper: connect, read bars, detect setups, LOG signals. ZERO orders placed.
+#   live:  place real orders on the account above — see README for what
+#          Steve must approve before live is ever enabled.
+# Live trading requires explicitly setting mode: live AND a real account_id.
+# run_paper.sh forces paper mode regardless of this value.
+mode: "paper"
+
+# Strategy settings
+symbol: "ES"          # front-month ES is resolved automatically at startup
+variant: "A"          # "A" = range break + retest hold (default); "B" = sweep + reclaim
+size: 1               # contracts per full-size trade
+stop_points: 4.0      # stop distance from entry, in ES points
+tp1_points: 6.0       # TP1 distance from entry (take 50% at size >= 2)
+tp2_points: 9.0       # TP2 distance from entry
+min_rr_to_tp1: 1.5    # skip unless reward/risk to TP1 >= this
+max_daily_loss: 500.0 # halt new entries if realized daily P&L <= -$500
+max_trades_per_day: 1 # one trade per day in the 3:50 window, no exceptions
+
+# Timing (ET, hard — see risk.py). Entry 15:50-15:55 only, flat by 15:58.
+poll_seconds_window: 12  # poll cadence inside 15:50-15:58 ET
+poll_seconds_idle: 60     # poll cadence outside the window
+
+# MOC imbalance feed — NOT AVAILABLE, DO NOT FAKE IT.
+# No retail aggregate NYSE/Nasdaq MOC imbalance feed is available on this
+# machine, so imbalance_enabled must stay false. The bot's real trigger is
+# the level/range logic in strategy.py (Variant A/B). If a real feed is
+# ever wired in, set this true AND implement the feed reader — a config
+# flag alone must never be presented as imbalance data.
+imbalance_enabled: false
+
+# Manual skip days — NO automatic calendar detection is implemented.
+# Set true on FOMC days, mega-cap earnings after the bell, and index
+# rebalance days, when the 3:50 window is dominated by scheduled flow
+# this unproven rule set was not designed for. The bot logs and exits
+# the entry window without trading on a manual skip day.
+manual_skip_day: false
+manual_skip_reason: ""
